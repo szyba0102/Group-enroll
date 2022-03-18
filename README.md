@@ -1,6 +1,5 @@
-# Group-enroll
-Collaborative project written in MiniZinc in two-person group.
 # Group Enroll
+# Collaborative project written in MiniZinc in two-person group.
 
 This project concerns assigning students to groups given various constraints and preferences.
 It has been directly inspired by the system working at the AGH University (Faculty of Computer Science, Electronics and Telecommunications).
