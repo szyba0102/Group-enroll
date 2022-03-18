@@ -4,16 +4,6 @@
 This project concerns assigning students to groups given various constraints and preferences.
 It has been directly inspired by the system working at the AGH University (Faculty of Computer Science, Electronics and Telecommunications).
 
-## Instructions
-
-1. Fork this project into a **private** group:
-2. Add @bobot-is-a-bot as the new project's member (role: `maintainer`) 
-4. Read this Readme till the end for the instructions.
-5. Solve the problem!
-6. Automated tests will be run periodically to check quality of your model. The results will be available in the `GRADE.md`
-7. If done before the deadline, contact teacher via Teams, so he can check it earlier.
-8. To take part in the competition create file `competition.sol` containing solution for the `competition.dzn` instance.
-
 ## Problem Details
 
 Imagine working in the faculty administration at the AGH UST in Krakow. Every year the same story: first you have to prepare the schedule for the whole year, later you have to assign students to the available groups. Recently your faculty started to notice the obnoxious difficulty of those tasks and tried to introduce some automation. Unfortunately it doesn't work as well as you hoped. Therefore you are going to the matter into your own hands. To be realistic, you will focus on the group assignment as it's less disruptive than the whole schedule. After spending some time under the shower and having several eureka moments, you came with the following definition of the problem.
