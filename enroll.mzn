@@ -112,6 +112,7 @@ constraint total_break_disappointment = sum(break_disappointment);
 % array that contains preference disappointment for each student
 array[Student] of var int: preference_disappointment;
 array[Student,Class] of var Preference: maximum_group_preference;
+
 % array that contains difference of preference value for each class and each student
 array[Student,Class] of var int: difference_preference;
 var 0..infinity: total_preference_disappointment;
@@ -147,16 +148,6 @@ var int: objective = sum([total_disappointment[sID] * total_disappointment[sID] 
 solve:: seq_search([
  int_search(preference_disappointment, largest, indomain_min),
  int_search(break_disappointment, largest, indomain_min)]) minimize objective;
-% output                                
-% ["arrival_at_campus_time = ", show(arrival_at_campus_time), ";\n"] ++
-% ["campus_leaving_time = ", show(campus_leaving_time), ";\n"] ++         
-% ["breaks_length = ", show(breaks_length), ";\n"] ++          
-% ["group_end = ", show(group_end), ";\n"] ++  
-% ["assignment = ", show(assignment), ";\n"] ++
-% ["maximum_group_preference  = ", show(maximum_group_preference), ";\n"] ++
-% ["total_break_disappointment = ", show(total_break_disappointment), ";\n"] ++
-% ["total_preference_disappointment = ", show(total_preference_disappointment), ";\n"] ++
-% ["objective = ", show(objective), ";\n"];
 
   
 output    
@@ -170,7 +161,3 @@ output
 ["total_break_disappointment = " ++ show(total_break_disappointment) ++ ";\n"] ++
 ["total_preference_disappointment = " ++ show(total_preference_disappointment) ++ ";\n"] ++
 ["objective = " ++ show(objective) ++ ";\n"]
-%  ++
-% ["first slot " ++ show(earliest_group_first_slot) ++ ";\n"] ++
-% ["last slot = " ++ show(latest_group_last_slot) ++ ";\n"] ++
-% ["student is at some class: "] ++ [show(student_is_at_some_class[1,1,t]) | t in PossibleGroupTime] ++ [";\n"]
