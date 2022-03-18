@@ -14,7 +14,7 @@ set of int: Day = 1..n_days;
 set of int: Location = 1..n_locations;
 set of int: Time = 0..n_time_units_in_hour * 24;
 set of int: WorkTime = 0..max(Time)*n_days;
-  set of int: Preference = exclusion..max([student_prefers[s,g] | s in Student, g in Group]);
+set of int: Preference = exclusion..max([student_prefers[s,g] | s in Student, g in Group]);
 
 array[Student] of 0..5: student_break_importance;
 array[Student, Group] of int: student_prefers;
@@ -38,21 +38,23 @@ array[Student, Class] of var 0..n_groups: assignment;
 constraint forall(s in Student, c in Class)(if maximum_group_preference[s,c] = -1 then assignment[s,c] = 0 else assignment[s,c] != 0 endif); 
   
   
+  
+  
 % Break disappointment part
-int: maxium_travel_duration = max(travel_duration);
-array[Group,Group] of var -1..max(Time): breaks_length;
-%array[Group,Group] of var int: breaks_length;
+
+array[Group,Group] of var int: breaks_length;
 
 predicate cohabitate(var Group: group1, var Group: group2) = exists([group1 in k /\ group2 in k | k in group_cohabitats]);
 
 
-constraint forall(i in Group, j in Group where i=j \/ cohabitate(i,j) \/ group_day[i] != group_day[j])(breaks_length[i,j] = maxium_travel_duration);
+
+constraint forall(i in Group, j in Group where i=j \/ cohabitate(i,j) \/ group_day[i] != group_day[j])(breaks_length[i,j] = 1000000);
 
 constraint forall(i in Group)(
              forall(j in Group where i<j /\ group_day[i] = group_day[j] /\ not cohabitate(i,j))(
              let {
-             var Time: gEnd = min(group_end[i],group_end[j]);
-             var Time: gStart = max(group_start[i],group_start[j])
+             var int: gEnd = min(group_end[i],group_end[j]);
+             var int: gStart = max(group_start[i],group_start[j])
              } in 
 if gEnd <= gStart then breaks_length[j,i] = gStart-gEnd /\ breaks_length[i,j] = gStart-gEnd else breaks_length[j,i] = -1 /\ breaks_length[i,j] = -1 endif));
                     
@@ -64,8 +66,8 @@ constraint forall(i in Student)(
 )));              
    
 %Evaluating break disappointment
-array[Student] of var 0..max(WorkTime): break_disappointment; %normalised value (in hours)
-var 0..max(WorkTime)*n_students: total_break_disappointment;
+array[Student] of var 0..infinity: break_disappointment; %normalised value (in hours)
+var 0..infinity: total_break_disappointment;
 
 array[Group] of var Time: group_end;
 array[Student,Day] of var bool: student_at_campus;
@@ -75,8 +77,8 @@ array[Student, Day] of var Time: time_at_campus;
 array[Student] of var WorkTime: time_at_campus_in_week;
 array[Student] of var WorkTime: summed_classes_length_in_week;
 
-% mozna zmienic na time (było worktime)
-function var Time: common_time(var Group: g1, var Group: g2) = class_duration[group_class[g1]] + class_duration[group_class[g2]] - (max(group_end[g1], group_end[g2]) - min(group_start[g1], group_start[g2]));
+
+function var WorkTime: common_time(var Group: g1, var Group: g2) = class_duration[group_class[g1]] + class_duration[group_class[g2]] - (max(group_end[g1], group_end[g2]) - min(group_start[g1], group_start[g2]));
 
 
 constraint forall(i in Student, c in Class where assignment[i,c] != 0)(student_at_campus[i,group_day[assignment[i,c]]] = true);
@@ -106,19 +108,20 @@ constraint total_break_disappointment = sum(break_disappointment);
  
              
 %Preference disappointment part
-array[Student,Class] of var Preference: maximum_group_preference;
-array[Student,Class] of var Preference: preference_difference;
+
 % array that contains preference disappointment for each student
-array[Student] of var 0..max(Preference)*n_classes: preference_disappointment;
+array[Student] of var int: preference_disappointment;
+array[Student,Class] of var Preference: maximum_group_preference;
 % array that contains difference of preference value for each class and each student
-var 0..max(Preference)*n_students*n_classes: total_preference_disappointment;
+array[Student,Class] of var int: difference_preference;
+var 0..infinity: total_preference_disappointment;
 set of int: Possible_group_size = 0..max(class_size);
 
 constraint forall(k in Student, i in Class)(maximum_group_preference[k,i] = max([student_prefers[k,j] | j in Group where group_class[j] = i]));
                      
-constraint forall(k in Student,i in Class)(if maximum_group_preference[k,i] != -1 then preference_difference[k,i] = maximum_group_preference[k,i] - student_prefers[k,assignment[k,i]] else preference_difference[k,i] = 0 endif);
+constraint forall(k in Student,i in Class)(if maximum_group_preference[k,i] != -1 then difference_preference[k,i] = maximum_group_preference[k,i] - student_prefers[k,assignment[k,i]] else difference_preference[k,i] = 0 endif);
                                             
-constraint forall(i in Student)(preference_disappointment[i] = sum([preference_difference[i,k] | k in Class]));
+constraint forall(i in Student)(preference_disappointment[i] = sum([difference_preference[i,k] | k in Class]));
                      
 constraint total_preference_disappointment = sum(preference_disappointment);
 
@@ -132,15 +135,12 @@ constraint forall(gID in Group)(num_of_assigned_students(gID) <= class_size[grou
 
 
 %Evaluating total objective
-
-
-array[Student] of var 0..(max(Preference)*n_students+max(WorkTime)*n_students): total_disappointment;
+array[Student] of var int: total_disappointment;
 constraint forall(sID in Student)
   (total_disappointment[sID] = ceil_div((student_break_importance[sID] * break_disappointment[sID] +
                                         (10 - student_break_importance[sID]) * preference_disappointment[sID]), 10));
                                      
-var 0..(max(Preference)*n_students+max(WorkTime)*n_students)^2 : objective = sum([total_disappointment[sID] * total_disappointment[sID] | sID in Student]);
-
+var int: objective = sum([total_disappointment[sID] * total_disappointment[sID] | sID in Student]);
 
 
 
@@ -169,8 +169,7 @@ output
 ["];\n"] ++
 ["total_break_disappointment = " ++ show(total_break_disappointment) ++ ";\n"] ++
 ["total_preference_disappointment = " ++ show(total_preference_disappointment) ++ ";\n"] ++
-["objective = " ++ show(objective) ++ ";\n"] 
-%["max_traveL-dur = " ++ show(maxium_travel_duration) ++ ";\n"]
+["objective = " ++ show(objective) ++ ";\n"]
 %  ++
 % ["first slot " ++ show(earliest_group_first_slot) ++ ";\n"] ++
 % ["last slot = " ++ show(latest_group_last_slot) ++ ";\n"] ++
