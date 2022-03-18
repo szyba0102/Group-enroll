@@ -3,10 +3,6 @@
 This project concerns assigning students to groups given various constraints and preferences.
 It has been directly inspired by the system working at the AGH University (Faculty of Computer Science, Electronics and Telecommunications).
 
-## Competition :boxing_glove:
-
-Check out the :boxing_glove: [the competition scoreboard on wiki](../../wikis/Scoreboard/). :boxing_glove:
-
 ## Instructions
 
 1. Fork this project into a **private** group:
